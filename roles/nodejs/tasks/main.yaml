@@ -1,0 +1,31 @@
+- name: Copy NVM install script
+  ansible.builtin.copy:
+    src: nvm-install.sh
+    dest: /tmp/nvm-install.sh
+    mode: '0755'
+
+- name: Run NVM installer
+  ansible.builtin.shell: >
+    bash /tmp/nvm-install.sh
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+- name: Install Node.js version {{ nodejs_version }}
+  ansible.builtin.shell: >
+    source {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm install {{ nodejs_version }}
+  args:
+    executable: /bin/bash
+    creates: "{{ ansible_env.HOME }}/.nvm/versions/node/v{{ nodejs_version }}"
+
+- name: Copy PM2 install script
+  ansible.builtin.copy:
+    src: pm2-setup.deb.sh
+    dest: /tmp/pm2-setup.deb.sh
+    mode: '0755'
+
+- name: Install PM2 globally
+  ansible.builtin.shell: >
+    source {{ ansible_env.HOME }}/.nvm/nvm.sh && npm install -g pm2
+  args:
+    executable: /bin/bash
+    creates: "{{ ansible_env.HOME }}/.nvm/versions/node/v{{ nodejs_version }}/bin/pm2"

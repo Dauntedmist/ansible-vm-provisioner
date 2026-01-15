@@ -1,0 +1,48 @@
+---
+- name: Install dependencies for PostgreSQL repository
+  ansible.builtin.apt:
+    name:
+      - curl
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create directory for PGDG key
+  ansible.builtin.file:
+    path: "{{ pg_key_dir }}"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Import PostgreSQL signing key
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: "{{ postgres_pg_key_path }}"
+    mode: '0644'
+  become: true
+
+- name: Create PostgreSQL repository configuration file
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ postgres_pg_key_path }}] {{ postgres_pg_repo_url }} {{ ansible_distribution_release }}-pgdg main"
+    filename: pgdg
+    state: present
+  become: true
+
+- name: Update apt cache and install PostgreSQL {{ postgres_version }}
+  ansible.builtin.apt:
+    name:
+      - "postgresql-{{ postgres_version }}"
+      - "postgresql-client-{{ postgres_version }}"
+      - "libpq-dev"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Ensure PostgreSQL service is started and enabled
+  ansible.builtin.systemd:
+    name: postgresql
+    state: started
+    enabled: true
+  become: true

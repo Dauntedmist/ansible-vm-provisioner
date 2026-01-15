@@ -1,0 +1,8 @@
+---
+# The version you want from the official Apt repository
+postgres_version: "18"
+
+# Paths according to the documentation provided
+postgres_pg_key_dir: "/usr/share/postgresql-common/pgdg"
+postgres_pg_key_path: "/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc"
+postgres_pg_repo_url: "https://apt.postgresql.org/pub/repos/apt"
