@@ -1,0 +1,50 @@
+---
+- name: Install GitLab dependencies
+  ansible.builtin.apt:
+    name:
+      - curl
+      - ca-certificates
+      - perl
+      - openssh-server
+      - tzdata
+    state: present
+    update_cache: true
+  become: true
+
+- name: Download GitLab repository installation script
+  ansible.builtin.get_url:
+    url: "{{ gitlab_repo_script_url }}"
+    dest: /tmp/gitlab_repo.sh
+    mode: '0755'
+
+- name: Run GitLab repository installation script
+  ansible.builtin.shell: bash /tmp/gitlab_repo.sh
+  become: true
+  register: repo_added
+  changed_when: "'The repository is setup' in repo_added.stdout"
+
+- name: Install GitLab {{ gitlab_edition }}
+  ansible.builtin.apt:
+    name: "{{ gitlab_edition }}"
+    state: present
+    update_cache: true
+  become: true
+  environment:
+    # This prevents GitLab from auto-configuring during install
+    # so we can use our template instead.
+    EXTERNAL_URL: "{{ gitlab_external_url }}"
+
+- name: Apply GitLab configuration template
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: '0600'
+  become: true
+  register: gitlab_config
+
+- name: Reconfigure GitLab (Apply changes)
+  ansible.builtin.command: gitlab-ctl reconfigure
+  become: true
+  when: gitlab_config.changed

@@ -1,0 +1,11 @@
+external_url '{{ gitlab_external_url }}'
+
+# Use the bundled PostgreSQL
+postgresql['enable'] = true
+
+# Use the bundled Nginx
+nginx['enable'] = true
+
+# SELinux integration
+# GitLab includes specific policies for its bundled services
+gitlab_rails['selinux_enabled'] = true

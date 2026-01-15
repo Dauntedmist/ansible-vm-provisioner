@@ -1,0 +1,9 @@
+---
+# The URL users will use to access GitLab
+gitlab_external_url: "http://gitlab.example.com"
+
+# The specific edition (gitlab-ee for Enterprise, gitlab-ce for Community)
+gitlab_edition: "gitlab-ee"
+
+# Repository details
+gitlab_repo_script_url: "https://packages.gitlab.com/install/repositories/gitlab/{{ gitlab_edition }}/script.deb.sh"
