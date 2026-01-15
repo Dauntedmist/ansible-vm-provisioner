@@ -1,0 +1,53 @@
+---
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - wget
+      - gnupg
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create directory for GPG keyrings
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Import Grafana GPG key
+  ansible.builtin.get_url:
+    url: "{{ grafana_gpg_key_url }}"
+    dest: /tmp/grafana.key
+    mode: '0644'
+  become: true
+
+- name: Dearmor Grafana GPG key
+  ansible.builtin.shell: >
+    set -o pipefail
+    cat /tmp/grafana.key | gpg --dearmor | tee {{ grafana_keyring_path }} > /dev/null
+  args:
+    creates: "{{ grafana_keyring_path }}"
+  become: true
+
+- name: Add Grafana APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ grafana_keyring_path }}] https://apt.grafana.com {{ grafana_release_channel }} main"
+    filename: grafana
+    state: present
+  become: true
+
+- name: Install Grafana package
+  ansible.builtin.apt:
+    name: "{{ grafana_package }}"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Ensure Grafana is enabled and started
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: started
+    enabled: true
+  become: true

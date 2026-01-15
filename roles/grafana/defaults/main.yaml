@@ -1,0 +1,10 @@
+---
+# Options: grafana-enterprise (Recommended) or grafana
+grafana_package: "grafana-enterprise"
+
+# Options: stable or beta
+grafana_release_channel: "stable"
+
+# Repository and Key paths
+grafana_gpg_key_url: "https://apt.grafana.com/gpg.key"
+grafana_keyring_path: "/etc/apt/keyrings/grafana.gpg"
