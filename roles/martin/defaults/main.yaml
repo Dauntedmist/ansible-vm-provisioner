@@ -1,0 +1,9 @@
+---
+# The version of Martin to install (can be 'latest' or a specific tag like 'v0.14.0')
+martin_version: "latest"
+
+# The architecture for the Debian package
+martin_arch: "x86_64"
+
+# Download URL base
+martin_repo_url: "https://github.com/maplibre/martin/releases/latest/download"
