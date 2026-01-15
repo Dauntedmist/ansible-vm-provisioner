@@ -1,0 +1,6 @@
+---
+# Path where the 'uv' binary will be accessible to all users
+python_uv_bin_dir: "/usr/local/bin"
+
+# You can specify a version (e.g., "0.5.1") or use the installer default
+python_uv_install_script_url: "https://astral.sh/uv/install.sh"

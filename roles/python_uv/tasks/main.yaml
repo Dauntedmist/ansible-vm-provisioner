@@ -1,0 +1,36 @@
+---
+- name: Download uv installer script
+  ansible.builtin.get_url:
+    url: "{{ uv_install_script_url }}"
+    dest: /tmp/uv-install.sh
+    mode: '0755'
+
+- name: Run uv installer
+  ansible.builtin.shell: >
+    sh /tmp/uv-install.sh
+  environment:
+    # This forces uv to install into a global location rather than a user home
+    CARGO_HOME: "/opt/cargo"
+    INSTALLER_PRINT_VERBOSE: "1"
+  args:
+    creates: "/opt/cargo/bin/uv"
+
+- name: Create symlink to global bin directory
+  ansible.builtin.file:
+    src: "/opt/cargo/bin/uv"
+    dest: "{{ uv_bin_dir }}/uv"
+    state: link
+  become: true
+
+- name: Ensure uv and uvx are executable by all
+  ansible.builtin.file:
+    path: "/opt/cargo/bin/{{ item }}"
+    mode: '0755'
+  loop:
+    - uv
+    - uvx
+  become: true
+
+- name: Verify uv installation
+  ansible.builtin.command: uv --version
+  changed_when: false
