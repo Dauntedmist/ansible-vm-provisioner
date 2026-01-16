@@ -1,7 +1,26 @@
+- name: Create the backend-dev group
+  ansible.builtin.group:
+    name: backend-dev
+    state: present
+  become: true
+
+- name: Create the backend-dev user
+  ansible.builtin.user:
+    name: backend-dev
+    group: backend-dev
+    create_home: true
+    shell: /bin/bash
+  become: true
+
 - name: Add Microsoft package signing key
-  ansible.builtin.apt_key:
+  ansible.builtin.deb822_repository:
     url: https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb
     state: present
+  become: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
   become: true
 
 - name: Install .NET SDK
