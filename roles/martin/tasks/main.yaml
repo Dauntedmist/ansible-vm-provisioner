@@ -24,11 +24,3 @@
 - name: Display Martin version
   ansible.builtin.debug:
     var: martin_check.stdout
-
-- name: Allow Martin to bind to port 3000
-  community.general.seport:
-    ports: 3000
-    proto: tcp
-    setype: http_port_t
-    state: present
-  become: true
