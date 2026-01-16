@@ -22,3 +22,9 @@
   become: true
   roles:
     - martin
+
+- name: Provision Prometheus monitoring
+  hosts: all
+  become: true
+  roles:
+    - prometheus
