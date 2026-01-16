@@ -12,10 +12,16 @@
     shell: /bin/bash
   become: true
 
-- name: Add Microsoft package signing key
-  ansible.builtin.deb822_repository:
-    url: https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb
-    state: present
+- name: Download Microsoft repository configuration
+  ansible.builtin.get_url:
+    url: "https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb"
+    dest: "/tmp/packages-microsoft-prod.deb"
+    mode: '0644'
+  become: true
+
+- name: Install Microsoft repository package
+  ansible.builtin.apt:
+    deb: "/tmp/packages-microsoft-prod.deb"
   become: true
 
 - name: Update apt cache
@@ -25,12 +31,18 @@
 
 - name: Install .NET SDK
   ansible.builtin.package:
-    name: "{{ dotnet_sdk_package_name }}"
+    name: dotnet-sdk-10.0
     state: present
   become: true
 
 - name: Install .NET Runtime
   ansible.builtin.package:
-    name: "{{ dotnet_runtime_package_name }}"
+    name: dotnet-runtime-10.0
     state: present
+  become: true
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "/tmp/packages-microsoft-prod.deb"
+    state: absent
   become: true
