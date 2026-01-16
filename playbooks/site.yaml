@@ -1,0 +1,6 @@
+---
+- name: Provision .NET environment
+  hosts: all
+  become: true
+  roles:
+    - dotnet
