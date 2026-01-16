@@ -1,4 +1,5 @@
-- name: Install prometheus dependencies
+---
+- name: Install common dependencies
   ansible.builtin.apt:
     name:
       - wget
@@ -8,26 +9,39 @@
     update_cache: true
   become: true
 
-- name: Install Prometheus
+# --- EXPORTER SECTION (Targeted at all managed nodes) ---
+- name: Install Prometheus Node Exporter
   ansible.builtin.apt:
-    name:
-      - prometheus
-      - prometheus-node-exporter
-      - prometheus-alertmanager
+    name: prometheus-node-exporter
     state: present
-    update_cache: true
   become: true
+  when: "'log_exporters' in group_names"
 
-- name: Ensure Prometheus service is started and enabled
-  ansible.builtin.systemd:
-    name: prometheus
-    state: started
-    enabled: true
-  become: true
-
-- name: Ensure Prometheus Node Exporter service is started and enabled
+- name: Ensure Node Exporter is started and enabled
   ansible.builtin.systemd:
     name: prometheus-node-exporter
     state: started
     enabled: true
   become: true
+  when: "'log_exporters' in group_names"
+
+# --- CONTROLLER SECTION (Targeted at the management node) ---
+- name: Install Prometheus Server and Alertmanager
+  ansible.builtin.apt:
+    name:
+      - prometheus
+      - prometheus-alertmanager
+    state: present
+  become: true
+  when: "'log_controllers' in group_names"
+
+- name: Ensure Controller services are started and enabled
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  become: true
+  loop:
+    - prometheus
+    - prometheus-alertmanager
+  when: "'log_controllers' in group_names"
