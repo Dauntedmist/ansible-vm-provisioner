@@ -1,6 +1,24 @@
 ---
 - name: Provision .NET environment
-  hosts: all
+  hosts: dotnet_containers
   become: true
   roles:
     - dotnet
+
+- name: Provision NodeJS environment
+  hosts: nodejs_containers
+  become: true
+  roles:
+    - nodejs
+
+- name: Provision PostgreSQL environment
+  hosts: db_containers
+  become: true
+  roles:
+    - postgres
+
+- name: Provision Martin application
+  hosts: martin_containers
+  become: true
+  roles:
+    - martin
