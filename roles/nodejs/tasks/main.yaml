@@ -8,14 +8,14 @@
   ansible.builtin.shell: >
     bash /tmp/nvm-install.sh
   args:
-    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+    creates: "{{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/nvm.sh"
 
 - name: Install Node.js version {{ nodejs_version }}
   ansible.builtin.shell: >
-    source {{ ansible_env.HOME }}/.nvm/nvm.sh && nvm install {{ nodejs_version }}
+    source {{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/nvm.sh && nvm install {{ nodejs_version }}
   args:
     executable: /bin/bash
-    creates: "{{ ansible_env.HOME }}/.nvm/versions/node/v{{ nodejs_version }}"
+    creates: "{{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/versions/node/v{{ nodejs_version }}"
 
 - name: Copy PM2 install script
   ansible.builtin.copy:
@@ -25,7 +25,7 @@
 
 - name: Install PM2 globally
   ansible.builtin.shell: >
-    source {{ ansible_env.HOME }}/.nvm/nvm.sh && npm install -g pm2
+    source {{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/nvm.sh && npm install -g pm2
   args:
     executable: /bin/bash
-    creates: "{{ ansible_env.HOME }}/.nvm/versions/node/v{{ nodejs_version }}/bin/pm2"
+    creates: "{{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/versions/node/v{{ nodejs_version }}/bin/pm2"
