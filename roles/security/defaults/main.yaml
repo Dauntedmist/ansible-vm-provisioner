@@ -3,4 +3,4 @@
 security_selinux_mode: "permissive"
 
 # The policy type (usually 'targeted' on most systems)
-security_selinux_policy: "targeted"
+security_selinux_policy: "default"

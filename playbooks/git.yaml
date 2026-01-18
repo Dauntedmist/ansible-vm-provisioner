@@ -1,0 +1,11 @@
+---
+# - name: Install selinux
+#   hosts: gitlab
+#   become: true
+#   roles:
+#     - security
+- name: Install Gitlab from Linux Package
+  hosts: gitlab
+  become: true
+  roles:
+    - gitlab

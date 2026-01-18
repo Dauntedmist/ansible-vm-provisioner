@@ -4,6 +4,7 @@
     name:
       - selinux-basics
       - selinux-policy-default
+      - auditd
       - policycoreutils
       - python3-selinux  # Required for Ansible's selinux modules
     state: present
@@ -17,15 +18,16 @@
   become: true
   register: selinux_config
 
+- name: Activate SELinux
+  ansible.builtin.shell: selinux-activate
+  become: true
+
 - name: Update GRUB and reboot if SELinux state changed
   ansible.builtin.debug:
     msg: "System may require a reboot to fully apply SELinux changes."
   when: selinux_config.reboot_required
 
-- name: Ensure custom service directories have correct context
-  community.general.sefcontext:
-    target: "/opt/my-custom-service(/.*)?"
-    setype: bin_t
-    state: present
-  become: true
-  # This ensures your dedicated service users can execute their binaries
+- name: Reboot Linux VM
+  ansible.builtin.reboot:
+    reboot_timeout: 1200
+    test_command: "uptime"

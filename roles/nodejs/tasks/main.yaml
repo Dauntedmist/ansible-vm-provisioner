@@ -5,27 +5,26 @@
     mode: '0755'
 
 - name: Run NVM installer
-  ansible.builtin.shell: >
-    bash /tmp/nvm-install.sh
-  args:
-    creates: "{{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/nvm.sh"
+  ansible.builtin.shell: /tmp/nvm-install.sh
+  register: nvm_install_result
+  changed_when: "'is already installed' not in nvm_install_result.stdout"
 
 - name: Install Node.js version {{ nodejs_version }}
-  ansible.builtin.shell: >
-    source {{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/nvm.sh && nvm install {{ nodejs_version }}
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install {{ nodejs_version }}
   args:
     executable: /bin/bash
-    creates: "{{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/versions/node/v{{ nodejs_version }}"
-
-- name: Copy PM2 install script
-  ansible.builtin.copy:
-    src: pm2-setup.deb.sh
-    dest: /tmp/pm2-setup.deb.sh
-    mode: '0755'
+    # This prevents running the install if the version is already there
+    creates: "{{ ansible_facts['env']['HOME'] | default('/home/svalle') }}/.nvm/versions/node/v{{ nodejs_version }}"
 
 - name: Install PM2 globally
-  ansible.builtin.shell: >
-    source {{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/nvm.sh && npm install -g pm2
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm use {{ nodejs_version }}
+    npm install -g pm2
   args:
     executable: /bin/bash
-    creates: "{{ ansible_facts['env']['HOME'] | default('/home/vagrant') }}/.nvm/versions/node/v{{ nodejs_version }}/bin/pm2"
+    creates: "{{ ansible_facts['env']['HOME'] | default('/home/svalle') }}/.nvm/versions/node/v{{ nodejs_version }}/bin/pm2"

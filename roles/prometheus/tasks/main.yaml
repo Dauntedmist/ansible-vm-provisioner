@@ -1,21 +1,10 @@
 ---
-- name: Install common dependencies
-  ansible.builtin.apt:
-    name:
-      - wget
-      - gnupg2
-      - software-properties-common
-    state: present
-    update_cache: true
-  become: true
-
 # --- EXPORTER SECTION (Targeted at all managed nodes) ---
 - name: Install Prometheus Node Exporter
   ansible.builtin.apt:
     name: prometheus-node-exporter
     state: present
   become: true
-  when: "'log_exporters' in group_names"
 
 - name: Ensure Node Exporter is started and enabled
   ansible.builtin.systemd:
@@ -23,7 +12,6 @@
     state: started
     enabled: true
   become: true
-  when: "'log_exporters' in group_names"
 
 # --- CONTROLLER SECTION (Targeted at the management node) ---
 - name: Install Prometheus Server and Alertmanager

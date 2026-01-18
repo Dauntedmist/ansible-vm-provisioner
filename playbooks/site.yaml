@@ -1,30 +1,47 @@
 ---
+- name: Enable SELinux
+  hosts: all,!gitlab
+  become: true
+  roles:
+    - security
+
 - name: Provision .NET environment
-  hosts: dotnet_containers
+  hosts: dotnet
   become: true
   roles:
     - dotnet
 
 - name: Provision NodeJS environment
-  hosts: nodejs_containers
-  become: true
+  hosts: nodejs
   roles:
     - nodejs
 
 - name: Provision PostgreSQL environment
-  hosts: db_containers
+  hosts: postgres
   become: true
   roles:
     - postgres
 
 - name: Provision Martin application
-  hosts: martin_containers
+  hosts: martin
   become: true
   roles:
     - martin
 
-- name: Provision Prometheus monitoring
-  hosts: all
+- name: Provision Prometheus exporters
+  hosts: all,!gitlab
   become: true
   roles:
     - prometheus
+
+- name: Provision Prometheus Server
+  hosts: log_controllers
+  become: true
+  roles:
+    - prometheus
+
+- name: Install Gitlab from Linux Package
+  hosts: gitlab
+  become: true
+  roles:
+    - gitlab

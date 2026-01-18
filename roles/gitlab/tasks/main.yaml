@@ -7,34 +7,23 @@
       - perl
       - openssh-server
       - tzdata
+      - python3-selinux
+      - selinux-utils     # Required to manage/ignore SELinux types
     state: present
     update_cache: true
   become: true
 
-- name: Download GitLab repository installation script
-  ansible.builtin.get_url:
-    url: "{{ gitlab_repo_script_url }}"
-    dest: /tmp/gitlab_repo.sh
-    mode: '0755'
-
-- name: Run GitLab repository installation script
-  ansible.builtin.shell: bash /tmp/gitlab_repo.sh
+- name: Create GitLab configuration directory
+  ansible.builtin.file:
+    path: /etc/gitlab
+    state: directory
+    owner: root
+    group: root
+    mode: '0775'
   become: true
-  register: repo_added
-  changed_when: "'The repository is setup' in repo_added.stdout"
 
-- name: Install GitLab {{ gitlab_edition }}
-  ansible.builtin.apt:
-    name: "{{ gitlab_edition }}"
-    state: present
-    update_cache: true
-  become: true
-  environment:
-    # This prevents GitLab from auto-configuring during install
-    # so we can use our template instead.
-    EXTERNAL_URL: "{{ gitlab_external_url }}"
-
-- name: Apply GitLab configuration template
+- name: Pre-place GitLab configuration
+  # We place this BEFORE install so the package knows to ignore SELinux immediately
   ansible.builtin.template:
     src: gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb
@@ -44,7 +33,39 @@
   become: true
   register: gitlab_config
 
-- name: Reconfigure GitLab (Apply changes)
+- name: Setup GitLab Repository
+  block:
+    - name: Download installation script
+      ansible.builtin.get_url:
+        url: "{{ gitlab_repo_script_url }}"
+        dest: /tmp/gitlab_repo.sh
+        mode: '0700'
+    
+    - name: Run installation script
+      ansible.builtin.command: bash /tmp/gitlab_repo.sh
+      args:
+        creates: "/etc/apt/sources.list.d/gitlab_gitlab-{{ gitlab_edition_short }}.list"
+  become: true
+
+- name: Install GitLab {{ gitlab_edition }}
+  ansible.builtin.apt:
+    name: "{{ gitlab_edition }}"
+    state: present
+  become: true
+  environment:
+    EXTERNAL_URL: "{{ gitlab_external_url }}"
+    # IMPORTANT: Prevents automatic reconfigure during apt install 
+    # which usually fails on the first run with SELinux enabled.
+    SKIP_POST_INSTALL_RECONFIGURE: "true"
+
+- name: Run GitLab reconfigure
+  # Run only if the template changed or if this is the initial install
   ansible.builtin.command: gitlab-ctl reconfigure
   become: true
-  when: gitlab_config.changed
+  when: gitlab_config.changed or (ansible_check_mode | bool == false)
+
+- name: Cleanup temporary installation script
+  ansible.builtin.file:
+    path: /tmp/gitlab_repo.sh
+    state: absent
+  become: true
