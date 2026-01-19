@@ -4,6 +4,9 @@ external_url '{{ gitlab_external_url }}'
 # Even in Permissive mode, this prevents Chef from trying to label files
 gitlab_rails['selinux_enabled'] = {{ gitlab_selinux_enabled | lower }}
 
+# Disable usage data collection
+gitlab_rails['initial_gitlab_product_usage_data'] = false
+
 # Add environment-specific SSL logic
 {% if gitlab_ssl_certificate is defined %}
 nginx['redirect_http_to_https'] = true
